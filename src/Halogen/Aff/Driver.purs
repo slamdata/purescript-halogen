@@ -37,17 +37,13 @@ import Halogen.Query.Input as Input
 -- | to provide all of the driver machinery again, focusing just on the code
 -- | needed to render components.
 -- |
--- | The type variables are as follows:
--- | - `h` is the type of value being rendered (`Halogen.HTML.Core.HTML`, for
--- |   example).
--- | - `r` is the type for the "render state" for the driver. This is a value
--- |   that is stored for each component, that allows the driver to persist
--- |   state between each rendering of a component. This will differ entirely
--- |   for each driver. `r` accepts a number of parameters that will be
--- |   explained below.
+-- | `r` is the type for the "render state" for the driver. This is a value
+-- | that is stored for each component, that allows the driver to persist
+-- | state between each rendering of a component. This will differ entirely
+-- | for each driver. `r` accepts a number of parameters that will be
+-- | explained below.
 -- |
--- | The "inner" type variables, used by `r` and the other functions are as
--- | follows:
+-- | The "inner" type variables, used by `r` and the other functions are:
 -- | - `s` is the state type for the component.
 -- | - `act` is the action type for the component
 -- | - `ps` is the set of slots for addressing child components
@@ -65,7 +61,7 @@ import Halogen.Query.Input as Input
 -- |   package. This return value would commonly be used to extract the rendered
 -- |   subtree for the child to graft it in place of the child slot. The
 -- |   existential package can be unwrapped with `Halogen.Aff.Driver.State.unRenderStateX`.
--- | - The `h` value to render, parameterised by the slot type for the
+-- | - The HTML value to render, parameterised by the slot type for the
 -- |   component's children. This slot type is what the "child" function
 -- |   accepts.
 -- | - The previous render state for the component. If the component has not
@@ -75,7 +71,7 @@ import Halogen.Query.Input as Input
 -- | the component, which will be fed back into `render` the next time the
 -- | component needs to update.
 -- |
--- | The `renderChild` function's behaviour will be highly dependant on the
+-- | The `renderChild` function's behaviour will be highly dependent on the
 -- | particular driver implementing `RenderSpec`. Its purpose is to take a
 -- | driver render state for a component and produce a new one that may remap
 -- | the rendered value to be something more suitable for grafting during

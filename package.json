@@ -19,7 +19,8 @@
     "example-higher-order-components": "spago --config examples/higher-order-components/spago.dhall bundle-app --main Example.HOC.Main --to examples/higher-order-components/dist/example.js",
     "example-interpret": "spago --config examples/interpret/spago.dhall bundle-app --main Example.Interpret.Main --to examples/interpret/dist/example.js",
     "example-keyboard-input": "spago --config examples/keyboard-input/spago.dhall bundle-app --main Example.KeyboardInput.Main --to examples/keyboard-input/dist/example.js",
-    "example-lifecycle": "spago --config examples/lifecycle/spago.dhall bundle-app --main Example.Lifecycle.Main --to examples/lifecycle/dist/example.js"
+    "example-lifecycle": "spago --config examples/lifecycle/spago.dhall bundle-app --main Example.Lifecycle.Main --to examples/lifecycle/dist/example.js",
+    "example-portal": "spago --config examples/portal/spago.dhall bundle-app --main Example.Portal.Main --to examples/portal/dist/example.js"
   },
   "devDependencies": {
     "purescript-psa": "^0.8.0",

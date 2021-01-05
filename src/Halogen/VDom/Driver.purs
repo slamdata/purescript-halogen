@@ -24,6 +24,7 @@ import Halogen.VDom as V
 import Halogen.VDom.DOM.Prop as VP
 import Halogen.VDom.Thunk (Thunk)
 import Halogen.VDom.Thunk as Thunk
+import Halogen.VDom.Util as Util
 import Unsafe.Reference (unsafeRefEq)
 import Web.DOM.Document (Document) as DOM
 import Web.DOM.Element (Element) as DOM
@@ -64,22 +65,16 @@ mkSpec
 mkSpec handler renderChildRef document =
   V.VDomSpec { buildWidget, buildAttributes, document }
   where
-
   buildAttributes
     :: DOM.Element
     -> V.Machine (Array (VP.Prop (Input action))) Unit
   buildAttributes = VP.buildProp handler
 
   buildWidget
-    :: V.VDomSpec
-          (Array (VP.Prop (Input action)))
-          (ComponentSlot slots Aff action)
-    -> V.Machine
-          (ComponentSlot slots Aff action)
-          DOM.Node
+    :: V.VDomSpec (Array (VP.Prop (Input action))) (ComponentSlot slots Aff action)
+    -> V.Machine (ComponentSlot slots Aff action) DOM.Node
   buildWidget spec = render
     where
-
     render :: V.Machine (ComponentSlot slots Aff action) DOM.Node
     render = EFn.mkEffectFn1 \slot ->
       case slot of
@@ -88,9 +83,12 @@ mkSpec handler renderChildRef document =
         ThunkSlot t -> do
           step <- EFn.runEffectFn1 buildThunk t
           pure $ V.mkStep $ V.Step (V.extract step) (Just step) patch done
+        PortalSlot elem inner ->
+          EFn.runEffectFn2 renderPortalSlot elem inner
 
     patch
-      :: EFn.EffectFn2 (WidgetState slots action)
+      :: EFn.EffectFn2
+            (WidgetState slots action)
             (ComponentSlot slots Aff action)
             (V.Step (ComponentSlot slots Aff action) DOM.Node)
     patch = EFn.mkEffectFn2 \st slot ->
@@ -102,7 +100,11 @@ mkSpec handler renderChildRef document =
           ThunkSlot t -> do
             step' <- EFn.runEffectFn2 V.step step t
             pure $ V.mkStep $ V.Step (V.extract step') (Just step') patch done
-        _ -> EFn.runEffectFn1 render slot
+          PortalSlot elem inner -> do
+            EFn.runEffectFn1 V.halt step
+            EFn.runEffectFn2 renderPortalSlot elem inner
+        _ ->
+          EFn.runEffectFn1 render slot
 
     buildThunk :: V.Machine (HTMLThunk slots action) DOM.Node
     buildThunk = Thunk.buildThunk unwrap spec
@@ -117,11 +119,21 @@ mkSpec handler renderChildRef document =
       let node = getNode rsx
       pure $ V.mkStep $ V.Step node Nothing patch done
 
+    renderPortalSlot
+      :: EFn.EffectFn2
+            DOM.HTMLElement
+            (HTML (ComponentSlot slots Aff action) action)
+            (V.Step (ComponentSlot slots Aff action) DOM.Node)
+    renderPortalSlot = EFn.mkEffectFn2 \elem inner -> do
+      step <- EFn.runEffectFn1 buildThunk (Thunk.thunked (\_ _ -> false) (const inner) unit)
+      emptyNode <- EFn.runEffectFn2 Util.createTextNode "" document
+      void $ DOM.appendChild (V.extract step) (HTMLElement.toNode elem)
+      pure $ V.mkStep $ V.Step emptyNode (Just step) patch done
+
   done :: EFn.EffectFn1 (WidgetState slots action) Unit
-  done = EFn.mkEffectFn1 \st ->
-    case st of
-      Just step -> EFn.runEffectFn1 V.halt step
-      _ -> pure unit
+  done = EFn.mkEffectFn1 case _ of
+    Just step -> EFn.runEffectFn1 V.halt step
+    _ -> pure unit
 
   getNode :: RenderStateX RenderState -> DOM.Node
   getNode = unRenderStateX (\(RenderState { node }) -> node)
@@ -147,7 +159,6 @@ renderSpec document container =
     , dispose: removeChild
     }
   where
-
   render
     :: forall state action slots output
      . (Input action -> Effect Unit)

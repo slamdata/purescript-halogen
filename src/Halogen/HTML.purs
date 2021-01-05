@@ -4,6 +4,7 @@ module Halogen.HTML
   ( ComponentHTML
   , PlainHTML
   , fromPlainHTML
+  , portal
   , slot
   , slot_
   , memoized
@@ -31,6 +32,7 @@ import Prelude (class Ord, Void, (<<<))
 import Prim.Row as Row
 import Type.Proxy (Proxy)
 import Unsafe.Coerce (unsafeCoerce)
+import Web.HTML (HTMLElement)
 
 -- | A convenience synonym for the output type of a `render` function for a
 -- | component that renders HTML.
@@ -58,7 +60,7 @@ fromPlainHTML = unsafeCoerce -- ≅ bimap absurd absurd
 -- | - the slot address index
 -- | - the component for the slot
 -- | - the input value to pass to the component
--- | - a function mapping outputs from the component to a query in the parent
+-- | - a function mapping outputs from the component to an action in the parent
 slot
   :: forall query action input output slots m label slot _1
    . Row.Cons label (Slot query output slot) _1 slots
@@ -70,8 +72,8 @@ slot
   -> input
   -> (output -> action)
   -> ComponentHTML action slots m
-slot label p component input outputQuery =
-  Core.widget (ComponentSlot (componentSlot label p component input (Just <<< outputQuery)))
+slot label p component input outputAction =
+  Core.widget (ComponentSlot (componentSlot label p component input (Just <<< outputAction)))
 
 -- | Defines a slot for a child component, ignoring its output.
 -- |
@@ -96,6 +98,15 @@ slot_
   -> ComponentHTML action slots m
 slot_ label p component input =
   Core.widget (ComponentSlot (componentSlot label p component input (const Nothing)))
+
+-- | Renders `ComponentHTML` to an arbitrary element in the DOM instead of its
+-- | actual location within a component's render tree.
+portal
+  :: forall action slots m
+   . HTMLElement
+  -> ComponentHTML action slots m
+  -> ComponentHTML action slots m
+portal elem html = Core.widget (PortalSlot elem html)
 
 -- | Optimizes rendering of a subtree given an equality predicate. If an argument
 -- | is deemed equivalent to the previous value, rendering and diffing will be

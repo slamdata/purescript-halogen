@@ -57,7 +57,7 @@ instance bifunctorHTML :: Bifunctor HTML where
 instance functorHTML :: Functor (HTML p) where
   map = rmap
 
-renderWidget ∷ ∀ w x i j. (i → j) → (w → HTML x j) → HTML w i → HTML x j
+renderWidget :: ∀ w x i j. (i -> j) -> (w -> HTML x j) -> HTML w i -> HTML x j
 renderWidget f g (HTML vdom) =
   HTML (VDom.renderWidget (map (map (map f))) (un HTML <<< g) vdom)
 

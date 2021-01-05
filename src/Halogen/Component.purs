@@ -18,7 +18,7 @@ module Halogen.Component
 
 import Prelude
 
-import Data.Bifunctor (lmap)
+import Data.Bifunctor (bimap, lmap)
 import Data.Bifunctor.Wrap (Wrap(..))
 import Data.Coyoneda (unCoyoneda)
 import Data.Foldable (traverse_)
@@ -37,6 +37,7 @@ import Halogen.VDom.Thunk as Thunk
 import Prim.Row as Row
 import Type.Proxy (Proxy)
 import Unsafe.Coerce (unsafeCoerce)
+import Web.HTML (HTMLElement)
 
 -- | The "public" type for a component, with details of the component internals
 -- | existentially hidden.
@@ -206,11 +207,13 @@ instance functorComponentSlotBox :: Functor (ComponentSlotBox slots m) where
 data ComponentSlot slots m action
   = ComponentSlot (ComponentSlotBox slots m action)
   | ThunkSlot (Thunk (HC.HTML (ComponentSlot slots m action)) action)
+  | PortalSlot HTMLElement (HC.HTML (ComponentSlot slots m action) action)
 
 instance functorComponentSlot :: Functor (ComponentSlot slots m) where
   map f = case _ of
     ComponentSlot box -> ComponentSlot (map f box)
     ThunkSlot thunk -> ThunkSlot (Thunk.mapThunk (under Wrap (map f) <<< lmap (map f)) thunk)
+    PortalSlot elem inner -> PortalSlot elem (bimap (map f) f inner)
 
 -- | Constructs a [`ComponentSlot`](#t:ComponentSlot).
 -- |
@@ -284,3 +287,5 @@ hoistSlot nat = case _ of
       ComponentSlot $ mkComponentSlot $ slot { component = hoist nat slot.component }
   ThunkSlot t ->
     ThunkSlot $ Thunk.hoist (lmap (hoistSlot nat)) t
+  PortalSlot el inner ->
+    PortalSlot el (lmap (hoistSlot nat) inner)

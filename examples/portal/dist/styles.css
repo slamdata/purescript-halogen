@@ -1,0 +1,40 @@
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: show 0.25s ease forwards;
+  z-index: 2;
+  background: #ccc;
+  padding: 1rem;
+  min-height: 200px;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal__close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+@keyframes show {
+  to {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
