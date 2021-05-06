@@ -8,8 +8,6 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
-type Slot = H.Slot Query Message
-
 data Query a
   = IsOn (Boolean -> a)
   | SetState Boolean a

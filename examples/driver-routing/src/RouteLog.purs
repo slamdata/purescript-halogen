@@ -8,8 +8,6 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
-type Slot = H.Slot Query Void
-
 data Query a = ChangeRoute String a
 
 type State = { history :: Array String }

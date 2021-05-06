@@ -12,8 +12,6 @@ import Halogen.HTML.Properties as HP
 import Web.Event.Event (Event)
 import Web.Event.Event as Event
 
-type Slot = H.Slot Query Message
-
 data Query a = ReceiveMessage String a
 
 data Message = OutputMessage String
