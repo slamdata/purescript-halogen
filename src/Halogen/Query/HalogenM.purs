@@ -138,7 +138,19 @@ query
   -> slot
   -> query a
   -> HalogenM state action slots output m (Maybe a)
-query label p q = HalogenM $ liftF $ ChildQuery $ CQ.mkChildQueryBox $
+query label p q = HalogenM $ liftF $ queryF label p q
+
+-- | An alternative to `query` which does not wrap the HalogenF in free
+queryF
+  :: forall state action output m label slots query output' slot a _1
+   . Row.Cons label (Slot query output' slot) _1 slots
+  => IsSymbol label
+  => Ord slot
+  => SProxy label
+  -> slot
+  -> query a
+  -> HalogenF state action slots output m (Maybe a)
+queryF label p q = ChildQuery $ CQ.mkChildQueryBox $
   CQ.ChildQuery (\k → maybe (pure Nothing) k <<< Slot.lookup label p) q identity
 
 -- | Sends a query to all children of a component at a given slot label.
