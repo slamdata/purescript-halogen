@@ -82,17 +82,18 @@ import DOM.HTML.Indexed.MenuitemType (MenuitemType(..)) as I
 import DOM.HTML.Indexed.OnOff (OnOff(..)) as I
 import DOM.HTML.Indexed.OrderedListType (OrderedListType(..)) as I
 import DOM.HTML.Indexed.PreloadValue (PreloadValue(..)) as I
-import DOM.HTML.Indexed.ScopeValue(ScopeValue(..)) as I
+import DOM.HTML.Indexed.ScopeValue (ScopeValue(..)) as I
 import DOM.HTML.Indexed.StepValue (StepValue(..)) as I
 import Data.Maybe (Maybe(..))
 import Data.MediaType (MediaType)
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype)
 import Data.String (joinWith)
 import Halogen.HTML.Core (class IsProp, AttrName(..), ClassName, Namespace, PropName(..), Prop)
 import Halogen.HTML.Core as Core
 import Halogen.Query.Input (Input(..), RefLabel)
 import Prim.Row as Row
 import Prim.TypeError as TypeError
+import Safe.Coerce (coerce)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM.Element (Element)
 
@@ -153,10 +154,10 @@ charset :: forall r i. String -> IProp (charset :: String | r) i
 charset = prop (PropName "charset")
 
 class_ :: forall r i. ClassName -> IProp (class :: String | r) i
-class_ = prop (PropName "className") <<< unwrap
+class_ = prop (PropName "className") <<< (coerce :: ClassName -> String)
 
 classes :: forall r i. Array ClassName -> IProp (class :: String | r) i
-classes = prop (PropName "className") <<< joinWith " " <<< map unwrap
+classes = prop (PropName "className") <<< joinWith " " <<< (coerce :: Array ClassName -> Array String)
 
 cols :: forall r i. Int -> IProp (cols :: Int | r) i
 cols = prop (PropName "cols")
