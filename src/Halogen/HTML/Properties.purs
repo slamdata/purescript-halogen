@@ -63,6 +63,9 @@ module Halogen.HTML.Properties
   , muted
   , poster
   , preload
+  , allow
+  , Allow(AllowFullScreen, AllowPaymentRequest, Allow, AllowMultiple)
+  , Origin(AllOrigins, SelfOrigin, SrcOrigin, NoneOrigin, Origin, MultiOrigin)
 
   , draggable
   , tabIndex
@@ -84,6 +87,7 @@ import DOM.HTML.Indexed.OrderedListType (OrderedListType(..)) as I
 import DOM.HTML.Indexed.PreloadValue (PreloadValue(..)) as I
 import DOM.HTML.Indexed.ScopeValue(ScopeValue(..)) as I
 import DOM.HTML.Indexed.StepValue (StepValue(..)) as I
+import Data.Array (intercalate)
 import Data.Maybe (Maybe(..))
 import Data.MediaType (MediaType)
 import Data.Newtype (class Newtype, unwrap)
@@ -310,8 +314,41 @@ poster = prop (PropName "poster")
 preload :: forall r i. I.PreloadValue -> IProp (preload :: I.PreloadValue | r) i
 preload = prop (PropName "preload")
 
+allow :: forall r i. Allow -> IProp (allow :: String | r) i
+allow = prop (PropName "allowfullscreen") <<< renderAllow
+  where
+    renderAllow = case _ of
+      AllowFullScreen -> "fullscreen"
+      AllowPaymentRequest -> "payment"
+      Allow x -> x
+      AllowOrigin service origin -> service <> "'" <> renderOrigin origin <> "'"
+      AllowMultiple xs -> intercalate "; " $ map renderAllow xs
+    renderOrigin = case _ of
+      AllOrigins -> "*"
+      SelfOrigin -> "self"
+      SrcOrigin -> "src"
+      NoneOrigin -> "none"
+      Origin x -> x
+      MultiOrigin xs -> intercalate " " xs
+
+data Allow
+  = AllowFullScreen
+  | AllowPaymentRequest
+  | Allow String
+  | AllowOrigin String Origin
+  | AllowMultiple (Array Allow)
+
+data Origin
+  = AllOrigins
+  | SelfOrigin
+  | SrcOrigin
+  | NoneOrigin
+  | Origin String
+  | MultiOrigin (Array String)
+
 draggable :: forall r i. Boolean -> IProp (draggable :: Boolean | r) i
 draggable = prop (PropName "draggable")
 
 tabIndex :: forall r i. Int -> IProp (tabIndex :: Int | r) i
 tabIndex = prop (PropName "tabIndex")
+
